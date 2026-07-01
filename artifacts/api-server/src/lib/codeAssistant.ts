@@ -28,14 +28,15 @@ const MODE_INSTRUCTIONS: Record<AssistantMode, string> = {
 - Produce clean, ready-to-use code that fulfills the request.
 - If the answer naturally spans multiple files, output each file as its own fenced block preceded by its bold filename.
 - Include brief usage notes or an example if helpful.`,
-  translate: `TASK: Translate the user's code from its source language to the target language they name in the request.
-- Preserve behavior, structure, and comments as faithfully as the target language allows.
-- Use idiomatic patterns and standard libraries of the target language rather than a literal line-by-line port.
-- Return the translated code in a single fenced block tagged with the target language.
-- After the code, add a short note about any language-specific differences the reader should know.`,
+  translate: `TASK: Translate the human-readable text in the user's input into the target spoken/human language they name in the request (e.g. Spanish, Japanese, French).
+- Translate natural-language content only: prose, code comments, docstrings, and user-facing string literals.
+- Do NOT translate code identifiers, keywords, or syntax. Any code must stay fully runnable and unchanged apart from its human-readable text.
+- If the input is plain prose with no code, translate it directly.
+- When the input contains code, return it in a fenced block with its original language tag; otherwise return the translated prose.`,
   explain: `TASK: Explain the user's code in clear, plain language.
+- Respond in the spoken/human language the user requests; if none is given, use English.
 - Give a concise high-level summary first (what it does and why).
-- Then walk through the important parts step by step.
+- Then break it down part by part, explaining what each section, line, or expression means.
 - Call out edge cases, potential bugs, or non-obvious behavior.
 - Only include code snippets when quoting the part you are explaining; do not rewrite the whole program.`,
   document: `TASK: Add documentation to the user's code.

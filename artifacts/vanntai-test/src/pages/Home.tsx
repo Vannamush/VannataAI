@@ -45,6 +45,9 @@ interface ModeSpec {
   desc: string;
   icon: React.ReactNode;
   needsCode: boolean;
+  showCodeLang: boolean;
+  showHumanLang: boolean;
+  sourceLabel: string;
   promptPlaceholder: string;
   defaultPrompt: string;
 }
@@ -56,6 +59,9 @@ const MODES: ModeSpec[] = [
     desc: "Debug & repair",
     icon: <Wrench className="h-4 w-4" />,
     needsCode: true,
+    showCodeLang: true,
+    showHumanLang: false,
+    sourceLabel: "Source Code",
     promptPlaceholder: "Describe the bug (optional)...",
     defaultPrompt: "Fix the bugs in this code.",
   },
@@ -65,6 +71,9 @@ const MODES: ModeSpec[] = [
     desc: "Refactor or modify",
     icon: <Edit3 className="h-4 w-4" />,
     needsCode: true,
+    showCodeLang: true,
+    showHumanLang: false,
+    sourceLabel: "Source Code",
     promptPlaceholder: "Describe the changes you want...",
     defaultPrompt: "Improve this code.",
   },
@@ -74,17 +83,23 @@ const MODES: ModeSpec[] = [
     desc: "Write from scratch",
     icon: <FileCode2 className="h-4 w-4" />,
     needsCode: false,
+    showCodeLang: false,
+    showHumanLang: false,
+    sourceLabel: "Source Code",
     promptPlaceholder: "Describe the files you want to generate...",
     defaultPrompt: "",
   },
   {
     key: "translate",
     title: "Translate",
-    desc: "Between languages",
+    desc: "To a spoken language",
     icon: <Languages className="h-4 w-4" />,
     needsCode: true,
+    showCodeLang: false,
+    showHumanLang: true,
+    sourceLabel: "Text or Code",
     promptPlaceholder: "Any extra notes (optional)...",
-    defaultPrompt: "Translate this code.",
+    defaultPrompt: "Translate this input.",
   },
   {
     key: "explain",
@@ -92,6 +107,9 @@ const MODES: ModeSpec[] = [
     desc: "Understand code",
     icon: <BookOpen className="h-4 w-4" />,
     needsCode: true,
+    showCodeLang: true,
+    showHumanLang: true,
+    sourceLabel: "Source Code",
     promptPlaceholder: "Anything specific to explain? (optional)",
     defaultPrompt: "Explain what this code does.",
   },
@@ -101,6 +119,9 @@ const MODES: ModeSpec[] = [
     desc: "Add comments & docs",
     icon: <FileText className="h-4 w-4" />,
     needsCode: true,
+    showCodeLang: true,
+    showHumanLang: false,
+    sourceLabel: "Source Code",
     promptPlaceholder: "Doc style notes (optional)...",
     defaultPrompt: "Add documentation and comments to this code.",
   },
@@ -110,6 +131,9 @@ const MODES: ModeSpec[] = [
     desc: "Generate unit tests",
     icon: <FlaskConical className="h-4 w-4" />,
     needsCode: true,
+    showCodeLang: true,
+    showHumanLang: false,
+    sourceLabel: "Source Code",
     promptPlaceholder: "Framework or cases to cover (optional)...",
     defaultPrompt: "Write unit tests for this code.",
   },
@@ -123,19 +147,19 @@ const MODE_MAP: Record<Mode, ModeSpec> = MODES.reduce(
   {} as Record<Mode, ModeSpec>,
 );
 
-const TARGET_LANGUAGES = [
-  "TypeScript",
-  "JavaScript",
-  "Python",
-  "Go",
-  "Rust",
-  "Java",
-  "C#",
-  "C++",
-  "Ruby",
-  "PHP",
-  "Kotlin",
-  "Swift",
+const HUMAN_LANGUAGES = [
+  "English",
+  "Spanish",
+  "French",
+  "German",
+  "Portuguese",
+  "Italian",
+  "Chinese (Simplified)",
+  "Japanese",
+  "Korean",
+  "Hindi",
+  "Arabic",
+  "Russian",
 ];
 
 export function Home() {
@@ -147,7 +171,7 @@ export function Home() {
   const [prompt, setPrompt] = useState("");
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("typescript");
-  const [targetLang, setTargetLang] = useState("Python");
+  const [humanLang, setHumanLang] = useState("Spanish");
 
   const { data: examples } = useListExamples();
   const createConv = useCreateAnthropicConversation();
@@ -180,7 +204,11 @@ export function Home() {
     const trimmed = prompt.trim();
     if (mode === "translate") {
       const note = trimmed ? ` ${trimmed}` : "";
-      return `Translate this code to ${targetLang}.${note}`;
+      return `Translate the following into ${humanLang}.${note}`;
+    }
+    if (mode === "explain") {
+      const base = trimmed || spec.defaultPrompt;
+      return `${base} Respond in ${humanLang} and break down what each part means.`;
     }
     return trimmed || spec.defaultPrompt;
   };
@@ -197,7 +225,14 @@ export function Home() {
     // In an active conversation, follow-ups always use the prompt box.
     if (activeId) {
       if (!prompt.trim()) return;
-      const followUp = { content: prompt.trim(), mode };
+      const trimmed = prompt.trim();
+      let content = trimmed;
+      if (mode === "translate") {
+        content = `Translate the following into ${humanLang}. ${trimmed}`;
+      } else if (mode === "explain") {
+        content = `${trimmed} Respond in ${humanLang} and break down what each part means.`;
+      }
+      const followUp = { content, mode };
       setPrompt("");
       await streamMessage(activeId, followUp);
       return;
@@ -210,7 +245,7 @@ export function Home() {
       content,
       mode,
       code: spec.needsCode ? code : undefined,
-      language: spec.needsCode ? language : undefined,
+      language: spec.showCodeLang ? language : undefined,
     };
 
     const newConv = await createConv.mutateAsync({
@@ -271,18 +306,20 @@ export function Home() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between gap-2">
                       <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Source Code
+                        {spec.sourceLabel}
                       </Label>
                       <div className="flex items-center gap-2">
-                        {mode === "translate" && (
+                        {spec.showHumanLang && (
                           <div className="flex items-center gap-1">
-                            <span className="text-xs text-muted-foreground">to</span>
+                            <span className="text-xs text-muted-foreground">
+                              {mode === "translate" ? "to" : "in"}
+                            </span>
                             <select
-                              value={targetLang}
-                              onChange={(e) => setTargetLang(e.target.value)}
+                              value={humanLang}
+                              onChange={(e) => setHumanLang(e.target.value)}
                               className="h-7 rounded-md border bg-background text-xs px-2"
                             >
-                              {TARGET_LANGUAGES.map((l) => (
+                              {HUMAN_LANGUAGES.map((l) => (
                                 <option key={l} value={l}>
                                   {l}
                                 </option>
@@ -290,12 +327,14 @@ export function Home() {
                             </select>
                           </div>
                         )}
-                        <Input
-                          value={language}
-                          onChange={(e) => setLanguage(e.target.value)}
-                          placeholder="Language"
-                          className="h-7 w-32 text-xs"
-                        />
+                        {spec.showCodeLang && (
+                          <Input
+                            value={language}
+                            onChange={(e) => setLanguage(e.target.value)}
+                            placeholder="Language"
+                            className="h-7 w-32 text-xs"
+                          />
+                        )}
                       </div>
                     </div>
                     <Textarea

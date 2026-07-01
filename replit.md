@@ -38,7 +38,9 @@ An AI coding assistant that fixes broken code, edits/refactors code to a request
 
 ## Product
 
-Seven modes: Fix Code, Edit Code, Generate Files, Translate (convert code between programming languages, with a target-language picker), Explain, Document (add comments/docstrings), and Tests (generate unit tests). Each mode has its own system prompt (`codeAssistant.ts`) and preloaded examples. New modes are added by extending the `mode` enum in `openapi.yaml` (+ codegen), `AssistantMode`/`MODE_INSTRUCTIONS` in `codeAssistant.ts`, examples, and the `MODES` config in `Home.tsx`. Translate's target language is folded into the message content client-side (no schema change). Past sessions saved in a sidebar; answers render as syntax-highlighted, copyable markdown.
+Seven modes: Fix Code, Edit Code, Generate Files, Translate (translate the human-readable text — comments/docstrings/prose — into a spoken/human language, leaving code intact), Explain, Document (add comments/docstrings), and Tests (generate unit tests). Each mode has its own system prompt (`codeAssistant.ts`) and preloaded examples. New modes are added by extending the `mode` enum in `openapi.yaml` (+ codegen), `AssistantMode`/`MODE_INSTRUCTIONS` in `codeAssistant.ts`, examples, and the `MODES` config in `Home.tsx`.
+
+Two independent language selectors, driven per-mode by `showCodeLang`/`showHumanLang` flags on the `MODES` config: a coding-language input (fix/edit/explain/document/test) and a spoken/human-language dropdown. Translate uses the human dropdown as its target ("to"); Explain uses it as its response language ("in") and also shows the coding-language input. The chosen human language is folded into the message content client-side (both new conversations via `buildContent` and follow-ups in `handleSubmit`) — no schema change. Past sessions saved in a sidebar; answers render as syntax-highlighted, copyable markdown.
 
 ## User preferences
 

@@ -133,31 +133,28 @@ function totalPrice(items: Item[]): number {
     code: null,
   },
   {
-    id: "translate-py-to-ts",
+    id: "translate-comments",
     mode: "translate",
-    title: "Python to TypeScript",
-    description: "Port a small Python function to idiomatic TypeScript.",
+    title: "Translate code comments",
+    description: "Translate the comments to your chosen spoken language, keeping code intact.",
     language: "python",
-    prompt: "Translate this code to TypeScript.",
-    code: `def group_by_first_letter(words):
-    result = {}
-    for w in words:
-        key = w[0].lower()
-        result.setdefault(key, []).append(w)
-    return result`,
+    prompt: "",
+    code: `# Calculate the average of a list of numbers
+def average(nums):
+    if not nums:  # avoid division by zero
+        return 0
+    return sum(nums) / len(nums)`,
   },
   {
-    id: "translate-js-to-go",
+    id: "translate-docstring",
     mode: "translate",
-    title: "JavaScript to Go",
-    description: "Rewrite an async fetch helper in Go.",
-    language: "javascript",
-    prompt: "Translate this code to Go.",
-    code: `async function getJson(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error("HTTP " + res.status);
-  return res.json();
-}`,
+    title: "Translate a docstring",
+    description: "Translate a docstring into your chosen spoken language.",
+    language: "python",
+    prompt: "",
+    code: `def greet(name):
+    """Return a friendly greeting for the given user name."""
+    return f"Hello, {name}!"`,
   },
   {
     id: "explain-regex",

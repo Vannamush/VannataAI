@@ -1,6 +1,13 @@
 export interface Example {
   id: string;
-  mode: "fix" | "edit" | "generate";
+  mode:
+    | "fix"
+    | "edit"
+    | "generate"
+    | "translate"
+    | "explain"
+    | "document"
+    | "test";
   title: string;
   description: string;
   language: string;
@@ -124,5 +131,116 @@ function totalPrice(items: Item[]): number {
     prompt:
       "Generate a typed React useLocalStorage hook that reads an initial value, persists updates, and handles JSON parse errors gracefully.",
     code: null,
+  },
+  {
+    id: "translate-py-to-ts",
+    mode: "translate",
+    title: "Python to TypeScript",
+    description: "Port a small Python function to idiomatic TypeScript.",
+    language: "python",
+    prompt: "Translate this code to TypeScript.",
+    code: `def group_by_first_letter(words):
+    result = {}
+    for w in words:
+        key = w[0].lower()
+        result.setdefault(key, []).append(w)
+    return result`,
+  },
+  {
+    id: "translate-js-to-go",
+    mode: "translate",
+    title: "JavaScript to Go",
+    description: "Rewrite an async fetch helper in Go.",
+    language: "javascript",
+    prompt: "Translate this code to Go.",
+    code: `async function getJson(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  return res.json();
+}`,
+  },
+  {
+    id: "explain-regex",
+    mode: "explain",
+    title: "Explain a dense regex",
+    description: "Break down a cryptic validation function.",
+    language: "javascript",
+    prompt: "Explain what this function does and what input it accepts.",
+    code: `const isValid = (s) =>
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^\\w\\s]).{8,}$/.test(s);`,
+  },
+  {
+    id: "explain-recursion",
+    mode: "explain",
+    title: "Explain recursion",
+    description: "Understand a recursive tree walk.",
+    language: "python",
+    prompt: "Explain how this recursion works, step by step.",
+    code: `def depth(node):
+    if node is None:
+        return 0
+    return 1 + max(depth(node.left), depth(node.right))`,
+  },
+  {
+    id: "document-class",
+    mode: "document",
+    title: "Document a class",
+    description: "Add docstrings and comments to a Python class.",
+    language: "python",
+    prompt: "Add clear docstrings and inline comments.",
+    code: `class RateLimiter:
+    def __init__(self, limit, window):
+        self.limit = limit
+        self.window = window
+        self.calls = []
+
+    def allow(self, now):
+        self.calls = [t for t in self.calls if now - t < self.window]
+        if len(self.calls) < self.limit:
+            self.calls.append(now)
+            return True
+        return False`,
+  },
+  {
+    id: "document-ts-fn",
+    mode: "document",
+    title: "Add JSDoc",
+    description: "Document a TypeScript utility with JSDoc.",
+    language: "typescript",
+    prompt: "Add complete JSDoc comments.",
+    code: `export function chunk<T>(arr: T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    out.push(arr.slice(i, i + size));
+  }
+  return out;
+}`,
+  },
+  {
+    id: "test-pure-fn",
+    mode: "test",
+    title: "Test a pure function",
+    description: "Generate Vitest tests for a slugify helper.",
+    language: "typescript",
+    prompt: "Write thorough tests using Vitest.",
+    code: `export function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}`,
+  },
+  {
+    id: "test-python",
+    mode: "test",
+    title: "Test with pytest",
+    description: "Generate pytest cases for a discount calculator.",
+    language: "python",
+    prompt: "Write pytest tests covering edge cases.",
+    code: `def apply_discount(price, percent):
+    if percent < 0 or percent > 100:
+        raise ValueError("percent must be between 0 and 100")
+    return round(price * (1 - percent / 100), 2)`,
   },
 ];

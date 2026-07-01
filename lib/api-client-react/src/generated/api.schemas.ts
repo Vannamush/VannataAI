@@ -16,6 +16,10 @@ export const ExampleMode = {
   fix: 'fix',
   edit: 'edit',
   generate: 'generate',
+  translate: 'translate',
+  explain: 'explain',
+  document: 'document',
+  test: 'test',
 } as const;
 
 export interface Example {
@@ -36,6 +40,10 @@ export const AnthropicConversationMode = {
   fix: 'fix',
   edit: 'edit',
   generate: 'generate',
+  translate: 'translate',
+  explain: 'explain',
+  document: 'document',
+  test: 'test',
 } as const;
 
 export interface AnthropicConversation {
@@ -66,6 +74,10 @@ export const AnthropicConversationInputMode = {
   fix: 'fix',
   edit: 'edit',
   generate: 'generate',
+  translate: 'translate',
+  explain: 'explain',
+  document: 'document',
+  test: 'test',
 } as const;
 
 export interface AnthropicConversationInput {
@@ -80,6 +92,10 @@ export const AnthropicMessageInputMode = {
   fix: 'fix',
   edit: 'edit',
   generate: 'generate',
+  translate: 'translate',
+  explain: 'explain',
+  document: 'document',
+  test: 'test',
 } as const;
 
 export interface AnthropicMessageInput {
@@ -96,6 +112,10 @@ export const AnthropicConversationWithMessagesMode = {
   fix: 'fix',
   edit: 'edit',
   generate: 'generate',
+  translate: 'translate',
+  explain: 'explain',
+  document: 'document',
+  test: 'test',
 } as const;
 
 export interface AnthropicConversationWithMessages {

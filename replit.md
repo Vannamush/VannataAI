@@ -38,7 +38,7 @@ An AI coding assistant that fixes broken code, edits/refactors code to a request
 
 ## Product
 
-Three modes: Fix Code (paste buggy code + describe the bug → corrected code + explanation), Edit Code (paste code + describe change → edited code), Generate Files (describe → generated code files). Clickable preloaded examples per mode; past sessions saved in a sidebar; answers render as syntax-highlighted, copyable markdown.
+Seven modes: Fix Code, Edit Code, Generate Files, Translate (convert code between programming languages, with a target-language picker), Explain, Document (add comments/docstrings), and Tests (generate unit tests). Each mode has its own system prompt (`codeAssistant.ts`) and preloaded examples. New modes are added by extending the `mode` enum in `openapi.yaml` (+ codegen), `AssistantMode`/`MODE_INSTRUCTIONS` in `codeAssistant.ts`, examples, and the `MODES` config in `Home.tsx`. Translate's target language is folded into the message content client-side (no schema change). Past sessions saved in a sidebar; answers render as syntax-highlighted, copyable markdown.
 
 ## User preferences
 

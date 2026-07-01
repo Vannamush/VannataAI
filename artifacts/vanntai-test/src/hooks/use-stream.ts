@@ -12,7 +12,7 @@ export function useStream() {
     const [streamError, setStreamError] = useState<string | null>(null);
     const queryClient = useQueryClient();
 
-    const streamMessage = useCallback(async (conversationId: number, data: { content: string, mode: "fix"|"edit"|"generate", code?: string, language?: string }) => {
+    const streamMessage = useCallback(async (conversationId: number, data: { content: string, mode: "fix"|"edit"|"generate"|"translate"|"explain"|"document"|"test", code?: string, language?: string }) => {
         setIsStreaming(true);
         setStreamedContent("");
         setStreamError(null);

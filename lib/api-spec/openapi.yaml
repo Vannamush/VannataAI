@@ -171,7 +171,7 @@ components:
           type: string
         mode:
           type: string
-          enum: [fix, edit, generate]
+          enum: [fix, edit, generate, translate, explain, document, test]
         title:
           type: string
         description:
@@ -198,7 +198,7 @@ components:
           type: string
         mode:
           type: string
-          enum: [fix, edit, generate]
+          enum: [fix, edit, generate, translate, explain, document, test]
         createdAt:
           type: string
           format: date-time
@@ -240,7 +240,7 @@ components:
           type: string
         mode:
           type: string
-          enum: [fix, edit, generate]
+          enum: [fix, edit, generate, translate, explain, document, test]
       required:
         - title
         - mode
@@ -251,7 +251,7 @@ components:
           type: string
         mode:
           type: string
-          enum: [fix, edit, generate]
+          enum: [fix, edit, generate, translate, explain, document, test]
         code:
           type: string
         language:
@@ -268,7 +268,7 @@ components:
           type: string
         mode:
           type: string
-          enum: [fix, edit, generate]
+          enum: [fix, edit, generate, translate, explain, document, test]
         createdAt:
           type: string
           format: date-time

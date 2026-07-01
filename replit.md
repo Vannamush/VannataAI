@@ -40,7 +40,17 @@ An AI coding assistant that fixes broken code, edits/refactors code to a request
 
 Seven modes: Fix Code, Edit Code, Generate Files, Translate (translate the human-readable text — comments/docstrings/prose — into a spoken/human language, leaving code intact), Explain, Document (add comments/docstrings), and Tests (generate unit tests). Each mode has its own system prompt (`codeAssistant.ts`) and preloaded examples. New modes are added by extending the `mode` enum in `openapi.yaml` (+ codegen), `AssistantMode`/`MODE_INSTRUCTIONS` in `codeAssistant.ts`, examples, and the `MODES` config in `Home.tsx`.
 
-Two independent language selectors, driven per-mode by `showCodeLang`/`showHumanLang` flags on the `MODES` config: a coding-language input (fix/edit/explain/document/test) and a spoken/human-language dropdown. Translate uses the human dropdown as its target ("to"); Explain uses it as its response language ("in") and also shows the coding-language input. The chosen human language is folded into the message content client-side (both new conversations via `buildContent` and follow-ups in `handleSubmit`) — no schema change. Past sessions saved in a sidebar; answers render as syntax-highlighted, copyable markdown.
+Two independent language selectors, driven per-mode by `showCodeLang`/`showHumanLang` flags on the `MODES` config: a coding-language input (fix/edit/document/test) and a spoken/human-language dropdown. The chosen human language is folded into the message content client-side (both new conversations via `buildContent` and follow-ups in `handleSubmit`) — no schema change. Past sessions saved in a sidebar; answers render as syntax-highlighted, copyable markdown.
+
+Explain mode has a Spoken/Code toggle (`explainLangKind` state): "Spoken" shows the human dropdown and asks the AI to respond in that language; "Code" shows the coding-language input and responds in English.
+
+Translate mode supports four input sources (`translateSource` state: `text`|`file`|`image`|`website`), chosen via source-picker buttons, each translated into the selected human language:
+- `text` — pasted text/code.
+- `file` — a text file read client-side (FileReader → text into `code`).
+- `image` — read as base64 (FileReader.readAsDataURL, data-URI prefix stripped) into `imageData`/`imageMediaType`; sent to Claude as a vision content block. Image bytes are NOT persisted (DB stores a null `code`), so translate is effectively single-shot for images.
+- `website` — a URL fetched server-side by `fetchWebsiteText()` (strips HTML tags/entities, 15s timeout, 12000 char cap). URLs are validated by `assertPublicUrl()` for SSRF safety: http/https only, and every resolved IP (plus each redirect hop, followed manually) is checked against private/loopback/link-local/reserved ranges; blocked or unreachable hosts return 400.
+
+Backend `AnthropicMessageInput` (openapi.yaml) carries `image`, `imageMediaType`, `sourceUrl`. Conversation history is built from prior rows BEFORE inserting the current user message, then the current message is appended.
 
 ## User preferences
 

@@ -12,4 +12,10 @@ export interface AnthropicMessageInput {
   mode: AnthropicMessageInputMode;
   code?: string;
   language?: string;
+  /** Base64-encoded image data (no data URI prefix) for translate-from-image. */
+  image?: string;
+  /** MIME type of the provided image, e.g. image/png. */
+  imageMediaType?: string;
+  /** A website URL whose text content should be fetched and translated. */
+  sourceUrl?: string;
 }

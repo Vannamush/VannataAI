@@ -256,6 +256,15 @@ components:
           type: string
         language:
           type: string
+        image:
+          type: string
+          description: Base64-encoded image data (no data URI prefix) for translate-from-image.
+        imageMediaType:
+          type: string
+          description: MIME type of the provided image, e.g. image/png.
+        sourceUrl:
+          type: string
+          description: A website URL whose text content should be fetched and translated.
       required:
         - content
         - mode

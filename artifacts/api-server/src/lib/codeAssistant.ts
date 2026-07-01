@@ -29,9 +29,10 @@ const MODE_INSTRUCTIONS: Record<AssistantMode, string> = {
 - If the answer naturally spans multiple files, output each file as its own fenced block preceded by its bold filename.
 - Include brief usage notes or an example if helpful.`,
   translate: `TASK: Translate the human-readable text in the user's input into the target spoken/human language they name in the request (e.g. Spanish, Japanese, French).
+- The input may be plain text, code, the text of a website, or an image. If an image is provided, first read the text visible in it, then translate that text.
 - Translate natural-language content only: prose, code comments, docstrings, and user-facing string literals.
 - Do NOT translate code identifiers, keywords, or syntax. Any code must stay fully runnable and unchanged apart from its human-readable text.
-- If the input is plain prose with no code, translate it directly.
+- If the input is plain prose (including website or image text) with no code, translate it directly.
 - When the input contains code, return it in a fenced block with its original language tag; otherwise return the translated prose.`,
   explain: `TASK: Explain the user's code in clear, plain language.
 - Respond in the spoken/human language the user requests; if none is given, use English.

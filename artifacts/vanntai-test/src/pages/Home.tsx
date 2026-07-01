@@ -172,6 +172,15 @@ export function Home() {
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("typescript");
   const [humanLang, setHumanLang] = useState("Spanish");
+  const [explainLangKind, setExplainLangKind] = useState<"human" | "code">("human");
+  const [translateSource, setTranslateSource] = useState<
+    "text" | "file" | "image" | "website"
+  >("text");
+  const [sourceUrl, setSourceUrl] = useState("");
+  const [imageData, setImageData] = useState("");
+  const [imageMediaType, setImageMediaType] = useState("");
+  const [imageName, setImageName] = useState("");
+  const [fileName, setFileName] = useState("");
 
   const { data: examples } = useListExamples();
   const createConv = useCreateAnthropicConversation();
@@ -204,17 +213,31 @@ export function Home() {
     const trimmed = prompt.trim();
     if (mode === "translate") {
       const note = trimmed ? ` ${trimmed}` : "";
+      if (translateSource === "image") {
+        return `Translate the text in this image into ${humanLang}.${note}`;
+      }
+      if (translateSource === "website") {
+        return `Translate the text from this website into ${humanLang}.${note}`;
+      }
       return `Translate the following into ${humanLang}.${note}`;
     }
     if (mode === "explain") {
       const base = trimmed || spec.defaultPrompt;
-      return `${base} Respond in ${humanLang} and break down what each part means.`;
+      if (explainLangKind === "human") {
+        return `${base} Respond in ${humanLang} and break down what each part means.`;
+      }
+      return `${base} Break down what each part means.`;
     }
     return trimmed || spec.defaultPrompt;
   };
 
   const canSubmitNew = () => {
     if (mode === "generate") return !!prompt.trim();
+    if (mode === "translate") {
+      if (translateSource === "image") return !!imageData;
+      if (translateSource === "website") return !!sourceUrl.trim();
+      return !!code.trim();
+    }
     if (spec.needsCode) return !!code.trim();
     return !!prompt.trim();
   };
@@ -230,7 +253,10 @@ export function Home() {
       if (mode === "translate") {
         content = `Translate the following into ${humanLang}. ${trimmed}`;
       } else if (mode === "explain") {
-        content = `${trimmed} Respond in ${humanLang} and break down what each part means.`;
+        content =
+          explainLangKind === "human"
+            ? `${trimmed} Respond in ${humanLang} and break down what each part means.`
+            : `${trimmed} Break down what each part means.`;
       }
       const followUp = { content, mode };
       setPrompt("");
@@ -241,11 +267,20 @@ export function Home() {
     if (!canSubmitNew()) return;
 
     const content = buildContent();
+    const isImage = mode === "translate" && translateSource === "image";
+    const isWebsite = mode === "translate" && translateSource === "website";
+    const includeCode = spec.needsCode && !isImage && !isWebsite;
+    const includeCodeLang =
+      spec.showCodeLang || (mode === "explain" && explainLangKind === "code");
+
     const requestData = {
       content,
       mode,
-      code: spec.needsCode ? code : undefined,
-      language: spec.showCodeLang ? language : undefined,
+      code: includeCode ? code : undefined,
+      language: includeCodeLang ? language : undefined,
+      image: isImage ? imageData : undefined,
+      imageMediaType: isImage ? imageMediaType : undefined,
+      sourceUrl: isWebsite ? sourceUrl.trim() : undefined,
     };
 
     const newConv = await createConv.mutateAsync({
@@ -267,8 +302,41 @@ export function Home() {
     setMode(example.mode as Mode);
     setPrompt(example.prompt);
     setCode(example.code || "");
+    if (example.mode === "translate") setTranslateSource("text");
     if (example.language) setLanguage(example.language);
   };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result);
+      const comma = result.indexOf(",");
+      setImageData(comma >= 0 ? result.slice(comma + 1) : result);
+      setImageMediaType(file.type || "image/png");
+      setImageName(file.name);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCode(String(reader.result || ""));
+      setFileName(file.name);
+    };
+    reader.readAsText(file);
+  };
+
+  const TRANSLATE_SOURCES: { key: typeof translateSource; label: string }[] = [
+    { key: "text", label: "Text / Code" },
+    { key: "file", label: "Text file" },
+    { key: "image", label: "Image" },
+    { key: "website", label: "Website" },
+  ];
 
   const isGenerating = createConv.isPending || isStreaming;
 
@@ -304,12 +372,31 @@ export function Home() {
               <div className="p-4 flex flex-col gap-4">
                 {spec.needsCode && (
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
                       <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         {spec.sourceLabel}
                       </Label>
                       <div className="flex items-center gap-2">
-                        {spec.showHumanLang && (
+                        {mode === "explain" && (
+                          <div className="flex items-center rounded-md border overflow-hidden text-xs">
+                            <button
+                              type="button"
+                              onClick={() => setExplainLangKind("human")}
+                              className={`px-2.5 py-1 transition-colors ${explainLangKind === "human" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
+                            >
+                              Spoken
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setExplainLangKind("code")}
+                              className={`px-2.5 py-1 transition-colors ${explainLangKind === "code" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
+                            >
+                              Code
+                            </button>
+                          </div>
+                        )}
+                        {(mode === "translate" ||
+                          (mode === "explain" && explainLangKind === "human")) && (
                           <div className="flex items-center gap-1">
                             <span className="text-xs text-muted-foreground">
                               {mode === "translate" ? "to" : "in"}
@@ -327,7 +414,8 @@ export function Home() {
                             </select>
                           </div>
                         )}
-                        {spec.showCodeLang && (
+                        {((mode !== "explain" && spec.showCodeLang) ||
+                          (mode === "explain" && explainLangKind === "code")) && (
                           <Input
                             value={language}
                             onChange={(e) => setLanguage(e.target.value)}
@@ -337,12 +425,87 @@ export function Home() {
                         )}
                       </div>
                     </div>
-                    <Textarea
-                      value={code}
-                      onChange={(e) => setCode(e.target.value)}
-                      placeholder="Paste your code here..."
-                      className="min-h-[120px] font-mono text-sm resize-none bg-muted/30 border-0 focus-visible:ring-0 p-3"
-                    />
+
+                    {mode === "translate" && (
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {TRANSLATE_SOURCES.map((s) => (
+                          <button
+                            key={s.key}
+                            type="button"
+                            onClick={() => setTranslateSource(s.key)}
+                            className={`text-xs px-2.5 py-1 rounded-md transition-colors ${translateSource === s.key ? "bg-primary text-primary-foreground" : "border text-muted-foreground hover:bg-muted"}`}
+                          >
+                            {s.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {mode === "translate" && translateSource === "image" ? (
+                      <div className="space-y-2">
+                        <label className="flex flex-col items-center justify-center gap-2 min-h-[120px] rounded-md border-2 border-dashed bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors p-4">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleImageChange}
+                          />
+                          {imageData ? (
+                            <img
+                              src={`data:${imageMediaType};base64,${imageData}`}
+                              alt={imageName}
+                              className="max-h-40 rounded-md object-contain"
+                            />
+                          ) : (
+                            <span className="text-sm text-muted-foreground">
+                              Click to upload an image
+                            </span>
+                          )}
+                        </label>
+                        {imageName && (
+                          <p className="text-xs text-muted-foreground truncate">
+                            {imageName}
+                          </p>
+                        )}
+                      </div>
+                    ) : mode === "translate" && translateSource === "website" ? (
+                      <Input
+                        value={sourceUrl}
+                        onChange={(e) => setSourceUrl(e.target.value)}
+                        placeholder="https://example.com"
+                        className="text-sm"
+                      />
+                    ) : mode === "translate" && translateSource === "file" ? (
+                      <div className="space-y-2">
+                        <label className="flex items-center justify-center gap-2 min-h-[52px] rounded-md border-2 border-dashed bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors p-3 text-sm text-muted-foreground">
+                          <input
+                            type="file"
+                            accept=".txt,.md,.csv,.json,.log,text/*"
+                            className="hidden"
+                            onChange={handleFileChange}
+                          />
+                          {fileName ? `Loaded: ${fileName}` : "Click to upload a text file"}
+                        </label>
+                        {code && (
+                          <Textarea
+                            value={code}
+                            onChange={(e) => setCode(e.target.value)}
+                            className="min-h-[100px] font-mono text-sm resize-none bg-muted/30 border-0 focus-visible:ring-0 p-3"
+                          />
+                        )}
+                      </div>
+                    ) : (
+                      <Textarea
+                        value={code}
+                        onChange={(e) => setCode(e.target.value)}
+                        placeholder={
+                          mode === "translate"
+                            ? "Paste text or code to translate..."
+                            : "Paste your code here..."
+                        }
+                        className="min-h-[120px] font-mono text-sm resize-none bg-muted/30 border-0 focus-visible:ring-0 p-3"
+                      />
+                    )}
                   </div>
                 )}
 

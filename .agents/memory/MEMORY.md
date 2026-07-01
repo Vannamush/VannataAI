@@ -1,1 +1,2 @@
 - [SSE streaming for AI responses](sse-streaming.md) — AI send-message endpoints stream text/event-stream with no Orval hook; consume with fetch+ReadableStream, handle content/done/error frames.
+- [SSRF URL fetch guard](ssrf-url-fetch.md) — server-side fetch of user URLs must validate protocol + resolved IPs + every redirect hop against private ranges.

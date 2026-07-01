@@ -126,7 +126,10 @@ export const SendAnthropicMessageBody = zod.object({
   "content": zod.string(),
   "mode": zod.enum(['fix', 'edit', 'generate', 'translate', 'explain', 'document', 'test']),
   "code": zod.string().optional(),
-  "language": zod.string().optional()
+  "language": zod.string().optional(),
+  "image": zod.string().optional().describe('Base64-encoded image data (no data URI prefix) for translate-from-image.'),
+  "imageMediaType": zod.string().optional().describe('MIME type of the provided image, e.g. image\/png.'),
+  "sourceUrl": zod.string().optional().describe('A website URL whose text content should be fetched and translated.')
 })
 
 export const SendAnthropicMessageResponse = zod.unknown()

@@ -695,7 +695,7 @@ export function Home() {
           </div>
 
           {/* Chat Area */}
-          <ScrollArea className="flex-1 p-6" ref={scrollRef}>
+          <ScrollArea className="flex-1 p-3 sm:p-6" ref={scrollRef}>
             <div className="space-y-6 max-w-3xl mx-auto pb-4">
               {isLoadingMessages ? (
                 <div className="space-y-4">

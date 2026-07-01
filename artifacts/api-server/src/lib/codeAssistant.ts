@@ -2,6 +2,7 @@ export type AssistantMode =
   | "fix"
   | "edit"
   | "generate"
+  | "convert"
   | "translate"
   | "explain"
   | "document"
@@ -28,12 +29,17 @@ const MODE_INSTRUCTIONS: Record<AssistantMode, string> = {
 - Produce clean, ready-to-use code that fulfills the request.
 - If the answer naturally spans multiple files, output each file as its own fenced block preceded by its bold filename.
 - Include brief usage notes or an example if helpful.`,
-  translate: `TASK: Translate the human-readable text in the user's input into the target spoken/human language they name in the request (e.g. Spanish, Japanese, French).
-- The input may be plain text, code, the text of a website, or an image. If an image is provided, first read the text visible in it, then translate that text.
-- Translate natural-language content only: prose, code comments, docstrings, and user-facing string literals.
-- Do NOT translate code identifiers, keywords, or syntax. Any code must stay fully runnable and unchanged apart from its human-readable text.
-- If the input is plain prose (including website or image text) with no code, translate it directly.
-- When the input contains code, return it in a fenced block with its original language tag; otherwise return the translated prose.`,
+  convert: `TASK: Convert the user's code from its source programming language into the target programming language they name in the request (e.g. Python to JavaScript).
+- Preserve the program's behavior and semantics exactly.
+- Use idiomatic patterns, naming conventions, and standard-library equivalents of the target language.
+- Return the converted code in a single fenced block tagged with the target language.
+- After the code, add a brief note on any non-obvious mapping choices, caveats, or missing equivalents.`,
+  translate: `TASK: Translate the user's text from its source spoken/human language into the target spoken/human language they name in the request (e.g. English to Japanese).
+- The input may be plain text, the text of a website, or an image. If an image is provided, first read the text visible in it, then translate that text.
+- Translate the natural-language content faithfully, preserving tone and meaning.
+- If a source language is named, translate from it; otherwise detect the source language automatically.
+- If the input happens to contain code, translate only the human-readable text (comments, docstrings, prose) and leave code identifiers, keywords, and syntax unchanged.
+- Return only the translated text (or, when code is present, the code in a fenced block with its human-readable text translated).`,
   explain: `TASK: Explain the user's code in clear, plain language.
 - Respond in the spoken/human language the user requests; if none is given, use English.
 - Give a concise high-level summary first (what it does and why).

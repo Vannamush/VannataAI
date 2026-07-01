@@ -13,6 +13,7 @@ export const AnthropicConversationMode = {
   fix: 'fix',
   edit: 'edit',
   generate: 'generate',
+  convert: 'convert',
   translate: 'translate',
   explain: 'explain',
   document: 'document',

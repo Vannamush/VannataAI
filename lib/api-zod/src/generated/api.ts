@@ -22,7 +22,7 @@ export const HealthCheckResponse = zod.object({
  */
 export const ListExamplesResponseItem = zod.object({
   "id": zod.string(),
-  "mode": zod.enum(['fix', 'edit', 'generate', 'translate', 'explain', 'document', 'test']),
+  "mode": zod.enum(['fix', 'edit', 'generate', 'convert', 'translate', 'explain', 'document', 'test']),
   "title": zod.string(),
   "description": zod.string(),
   "language": zod.string(),
@@ -38,7 +38,7 @@ export const ListExamplesResponse = zod.array(ListExamplesResponseItem)
 export const ListAnthropicConversationsResponseItem = zod.object({
   "id": zod.number(),
   "title": zod.string(),
-  "mode": zod.enum(['fix', 'edit', 'generate', 'translate', 'explain', 'document', 'test']),
+  "mode": zod.enum(['fix', 'edit', 'generate', 'convert', 'translate', 'explain', 'document', 'test']),
   "createdAt": zod.coerce.date()
 })
 export const ListAnthropicConversationsResponse = zod.array(ListAnthropicConversationsResponseItem)
@@ -49,13 +49,13 @@ export const ListAnthropicConversationsResponse = zod.array(ListAnthropicConvers
  */
 export const CreateAnthropicConversationBody = zod.object({
   "title": zod.string(),
-  "mode": zod.enum(['fix', 'edit', 'generate', 'translate', 'explain', 'document', 'test'])
+  "mode": zod.enum(['fix', 'edit', 'generate', 'convert', 'translate', 'explain', 'document', 'test'])
 })
 
 export const CreateAnthropicConversationResponse = zod.object({
   "id": zod.number(),
   "title": zod.string(),
-  "mode": zod.enum(['fix', 'edit', 'generate', 'translate', 'explain', 'document', 'test']),
+  "mode": zod.enum(['fix', 'edit', 'generate', 'convert', 'translate', 'explain', 'document', 'test']),
   "createdAt": zod.coerce.date()
 })
 
@@ -70,7 +70,7 @@ export const GetAnthropicConversationParams = zod.object({
 export const GetAnthropicConversationResponse = zod.object({
   "id": zod.number(),
   "title": zod.string(),
-  "mode": zod.enum(['fix', 'edit', 'generate', 'translate', 'explain', 'document', 'test']),
+  "mode": zod.enum(['fix', 'edit', 'generate', 'convert', 'translate', 'explain', 'document', 'test']),
   "createdAt": zod.coerce.date(),
   "messages": zod.array(zod.object({
   "id": zod.number(),
@@ -124,7 +124,7 @@ export const SendAnthropicMessageParams = zod.object({
 
 export const SendAnthropicMessageBody = zod.object({
   "content": zod.string(),
-  "mode": zod.enum(['fix', 'edit', 'generate', 'translate', 'explain', 'document', 'test']),
+  "mode": zod.enum(['fix', 'edit', 'generate', 'convert', 'translate', 'explain', 'document', 'test']),
   "code": zod.string().optional(),
   "language": zod.string().optional(),
   "image": zod.string().optional().describe('Base64-encoded image data (no data URI prefix) for translate-from-image.'),

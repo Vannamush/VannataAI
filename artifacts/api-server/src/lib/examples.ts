@@ -4,6 +4,7 @@ export interface Example {
     | "fix"
     | "edit"
     | "generate"
+    | "convert"
     | "translate"
     | "explain"
     | "document"
@@ -133,28 +134,73 @@ function totalPrice(items: Item[]): number {
     code: null,
   },
   {
-    id: "translate-comments",
-    mode: "translate",
-    title: "Translate code comments",
-    description: "Translate the comments to your chosen spoken language, keeping code intact.",
+    id: "convert-py-to-js",
+    mode: "convert",
+    title: "Python to JavaScript",
+    description: "Convert a Python function into idiomatic JavaScript.",
     language: "python",
     prompt: "",
-    code: `# Calculate the average of a list of numbers
-def average(nums):
-    if not nums:  # avoid division by zero
-        return 0
-    return sum(nums) / len(nums)`,
+    code: `def fizzbuzz(n):
+    result = []
+    for i in range(1, n + 1):
+        if i % 15 == 0:
+            result.append("FizzBuzz")
+        elif i % 3 == 0:
+            result.append("Fizz")
+        elif i % 5 == 0:
+            result.append("Buzz")
+        else:
+            result.append(str(i))
+    return result`,
   },
   {
-    id: "translate-docstring",
-    mode: "translate",
-    title: "Translate a docstring",
-    description: "Translate a docstring into your chosen spoken language.",
-    language: "python",
+    id: "convert-js-to-ts",
+    mode: "convert",
+    title: "JavaScript to TypeScript",
+    description: "Port a JavaScript class to fully typed TypeScript.",
+    language: "javascript",
     prompt: "",
-    code: `def greet(name):
-    """Return a friendly greeting for the given user name."""
-    return f"Hello, {name}!"`,
+    code: `class Stack {
+  constructor() {
+    this.items = [];
+  }
+  push(item) {
+    this.items.push(item);
+  }
+  pop() {
+    return this.items.pop();
+  }
+  peek() {
+    return this.items[this.items.length - 1];
+  }
+}`,
+  },
+  {
+    id: "translate-french",
+    mode: "translate",
+    title: "French greeting",
+    description: "A common French phrase to translate into your chosen language.",
+    language: "",
+    prompt: "",
+    code: `Bonjour ! Comment allez-vous aujourd'hui ? J'espère que vous passez une excellente journée.`,
+  },
+  {
+    id: "translate-spanish",
+    mode: "translate",
+    title: "Spanish sentence",
+    description: "Everyday Spanish text to translate into your chosen language.",
+    language: "",
+    prompt: "",
+    code: `Me gustaría reservar una mesa para dos personas esta noche, por favor. ¿Tienen disponibilidad?`,
+  },
+  {
+    id: "translate-japanese",
+    mode: "translate",
+    title: "Japanese phrase",
+    description: "A polite Japanese greeting to translate into your chosen language.",
+    language: "",
+    prompt: "",
+    code: `はじめまして。お会いできて嬉しいです。よろしくお願いします。`,
   },
   {
     id: "explain-regex",

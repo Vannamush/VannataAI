@@ -1,11 +1,22 @@
 import { useListAnthropicConversations, useDeleteAnthropicConversation, getListAnthropicConversationsQueryKey } from "@workspace/api-client-react";
 import { Link, useRoute } from "wouter";
-import { MessageSquare, Trash2, PlusCircle, Wrench, Edit3, FileCode2 } from "lucide-react";
+import { Trash2, PlusCircle, Wrench, Edit3, FileCode2, ArrowLeftRight, Languages, BookOpen, FileText, FlaskConical, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQueryClient } from "@tanstack/react-query";
 
-export function Sidebar() {
+const MODE_ICONS: Record<string, React.ReactNode> = {
+  fix: <Wrench className="h-3.5 w-3.5 text-primary" />,
+  edit: <Edit3 className="h-3.5 w-3.5 text-primary" />,
+  generate: <FileCode2 className="h-3.5 w-3.5 text-primary" />,
+  convert: <ArrowLeftRight className="h-3.5 w-3.5 text-primary" />,
+  translate: <Languages className="h-3.5 w-3.5 text-primary" />,
+  explain: <BookOpen className="h-3.5 w-3.5 text-primary" />,
+  document: <FileText className="h-3.5 w-3.5 text-primary" />,
+  test: <FlaskConical className="h-3.5 w-3.5 text-primary" />,
+};
+
+export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { data: conversations, isLoading } = useListAnthropicConversations();
   const deleteMutation = useDeleteAnthropicConversation();
   const queryClient = useQueryClient();
@@ -25,7 +36,7 @@ export function Sidebar() {
   return (
     <div className="w-64 border-r bg-sidebar flex flex-col h-full overflow-hidden">
       <div className="p-4 border-b">
-        <Link href="/">
+        <Link href="/" onClick={onNavigate}>
           <Button className="w-full justify-start gap-2 shadow-sm font-medium" variant="default">
             <PlusCircle className="h-4 w-4" />
             New Workspace
@@ -49,15 +60,13 @@ export function Sidebar() {
           </div>
         ) : (
           conversations?.map((conv) => (
-            <Link key={conv.id} href={`/conversation/${conv.id}`}>
+            <Link key={conv.id} href={`/conversation/${conv.id}`} onClick={onNavigate}>
               <div className={`
                 group relative flex flex-col gap-1 p-2 rounded-md cursor-pointer transition-colors
                 ${activeId === conv.id ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent/50 text-sidebar-foreground/80"}
               `}>
                 <div className="flex items-center gap-2">
-                  {conv.mode === "fix" && <Wrench className="h-3.5 w-3.5 text-primary" />}
-                  {conv.mode === "edit" && <Edit3 className="h-3.5 w-3.5 text-primary" />}
-                  {conv.mode === "generate" && <FileCode2 className="h-3.5 w-3.5 text-primary" />}
+                  {MODE_ICONS[conv.mode] ?? <MessageSquare className="h-3.5 w-3.5 text-primary" />}
                   <span className="text-sm font-medium truncate flex-1">{conv.title || "Untitled Session"}</span>
                 </div>
                 <div className="text-xs text-muted-foreground/60 flex items-center justify-between">

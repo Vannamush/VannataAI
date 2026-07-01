@@ -27,6 +27,7 @@ import {
   Sparkles,
   Send,
   Loader2,
+  ArrowLeftRight,
 } from "lucide-react";
 import { useLocation } from "wouter";
 
@@ -34,6 +35,7 @@ type Mode =
   | "fix"
   | "edit"
   | "generate"
+  | "convert"
   | "translate"
   | "explain"
   | "document"
@@ -47,6 +49,7 @@ interface ModeSpec {
   needsCode: boolean;
   showCodeLang: boolean;
   showHumanLang: boolean;
+  showInstructions: boolean;
   sourceLabel: string;
   promptPlaceholder: string;
   defaultPrompt: string;
@@ -61,6 +64,7 @@ const MODES: ModeSpec[] = [
     needsCode: true,
     showCodeLang: true,
     showHumanLang: false,
+    showInstructions: true,
     sourceLabel: "Source Code",
     promptPlaceholder: "Describe the bug (optional)...",
     defaultPrompt: "Fix the bugs in this code.",
@@ -73,6 +77,7 @@ const MODES: ModeSpec[] = [
     needsCode: true,
     showCodeLang: true,
     showHumanLang: false,
+    showInstructions: true,
     sourceLabel: "Source Code",
     promptPlaceholder: "Describe the changes you want...",
     defaultPrompt: "Improve this code.",
@@ -85,20 +90,35 @@ const MODES: ModeSpec[] = [
     needsCode: false,
     showCodeLang: false,
     showHumanLang: false,
+    showInstructions: true,
     sourceLabel: "Source Code",
     promptPlaceholder: "Describe the files you want to generate...",
     defaultPrompt: "",
   },
   {
+    key: "convert",
+    title: "Convert",
+    desc: "To another language",
+    icon: <ArrowLeftRight className="h-4 w-4" />,
+    needsCode: true,
+    showCodeLang: true,
+    showHumanLang: false,
+    showInstructions: true,
+    sourceLabel: "Source Code",
+    promptPlaceholder: "Any conversion notes (optional)...",
+    defaultPrompt: "Convert this code.",
+  },
+  {
     key: "translate",
     title: "Translate",
-    desc: "To a spoken language",
+    desc: "Between spoken languages",
     icon: <Languages className="h-4 w-4" />,
     needsCode: true,
     showCodeLang: false,
     showHumanLang: true,
-    sourceLabel: "Text or Code",
-    promptPlaceholder: "Any extra notes (optional)...",
+    showInstructions: false,
+    sourceLabel: "Text",
+    promptPlaceholder: "",
     defaultPrompt: "Translate this input.",
   },
   {
@@ -109,6 +129,7 @@ const MODES: ModeSpec[] = [
     needsCode: true,
     showCodeLang: true,
     showHumanLang: true,
+    showInstructions: true,
     sourceLabel: "Source Code",
     promptPlaceholder: "Anything specific to explain? (optional)",
     defaultPrompt: "Explain what this code does.",
@@ -121,6 +142,7 @@ const MODES: ModeSpec[] = [
     needsCode: true,
     showCodeLang: true,
     showHumanLang: false,
+    showInstructions: true,
     sourceLabel: "Source Code",
     promptPlaceholder: "Doc style notes (optional)...",
     defaultPrompt: "Add documentation and comments to this code.",
@@ -133,6 +155,7 @@ const MODES: ModeSpec[] = [
     needsCode: true,
     showCodeLang: true,
     showHumanLang: false,
+    showInstructions: true,
     sourceLabel: "Source Code",
     promptPlaceholder: "Framework or cases to cover (optional)...",
     defaultPrompt: "Write unit tests for this code.",
@@ -162,6 +185,26 @@ const HUMAN_LANGUAGES = [
   "Russian",
 ];
 
+const CODE_LANGUAGES = [
+  "typescript",
+  "javascript",
+  "python",
+  "java",
+  "c",
+  "cpp",
+  "csharp",
+  "go",
+  "rust",
+  "ruby",
+  "php",
+  "swift",
+  "kotlin",
+  "sql",
+  "html",
+  "css",
+  "bash",
+];
+
 export function Home() {
   const [match, params] = useRoute("/conversation/:id");
   const activeId = match ? Number(params.id) : null;
@@ -171,7 +214,9 @@ export function Home() {
   const [prompt, setPrompt] = useState("");
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("typescript");
+  const [targetLang, setTargetLang] = useState("javascript");
   const [humanLang, setHumanLang] = useState("Spanish");
+  const [fromLang, setFromLang] = useState("Auto-detect");
   const [explainLangKind, setExplainLangKind] = useState<"human" | "code">("human");
   const [translateSource, setTranslateSource] = useState<
     "text" | "file" | "image" | "website"
@@ -212,14 +257,18 @@ export function Home() {
   const buildContent = () => {
     const trimmed = prompt.trim();
     if (mode === "translate") {
-      const note = trimmed ? ` ${trimmed}` : "";
+      const from = fromLang !== "Auto-detect" ? ` from ${fromLang}` : "";
       if (translateSource === "image") {
-        return `Translate the text in this image into ${humanLang}.${note}`;
+        return `Read the text in this image and translate it${from} into ${humanLang}.`;
       }
       if (translateSource === "website") {
-        return `Translate the text from this website into ${humanLang}.${note}`;
+        return `Translate the text from this website${from} into ${humanLang}.`;
       }
-      return `Translate the following into ${humanLang}.${note}`;
+      return `Translate the following${from} into ${humanLang}.`;
+    }
+    if (mode === "convert") {
+      const note = trimmed ? ` ${trimmed}` : "";
+      return `Convert the following code from ${language} to ${targetLang}.${note}`;
     }
     if (mode === "explain") {
       const base = trimmed || spec.defaultPrompt;
@@ -251,7 +300,10 @@ export function Home() {
       const trimmed = prompt.trim();
       let content = trimmed;
       if (mode === "translate") {
-        content = `Translate the following into ${humanLang}. ${trimmed}`;
+        const from = fromLang !== "Auto-detect" ? ` from ${fromLang}` : "";
+        content = `Translate the following${from} into ${humanLang}. ${trimmed}`;
+      } else if (mode === "convert") {
+        content = `Convert the following code from ${language} to ${targetLang}. ${trimmed}`;
       } else if (mode === "explain") {
         content =
           explainLangKind === "human"
@@ -341,7 +393,7 @@ export function Home() {
   const isGenerating = createConv.isPending || isStreaming;
 
   return (
-    <div className="flex flex-col h-full max-w-5xl mx-auto w-full pt-6 pb-6 px-6 gap-6 relative">
+    <div className="flex flex-col h-full max-w-5xl mx-auto w-full pt-4 pb-4 px-3 sm:pt-6 sm:pb-6 sm:px-6 gap-4 sm:gap-6 relative">
       {!activeId ? (
         <ScrollArea className="flex-1">
           <div className="flex flex-col justify-center max-w-3xl mx-auto w-full py-6">
@@ -351,7 +403,7 @@ export function Home() {
               </div>
               <h1 className="text-4xl font-bold tracking-tight text-foreground">Vanntai Test</h1>
               <p className="text-lg text-muted-foreground">
-                Fix, edit, translate, explain, document, test, and generate code.
+                Fix, edit, generate, convert, explain, document, and test code, plus translate between spoken languages.
               </p>
             </div>
 
@@ -376,7 +428,7 @@ export function Home() {
                       <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         {spec.sourceLabel}
                       </Label>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         {mode === "explain" && (
                           <div className="flex items-center rounded-md border overflow-hidden text-xs">
                             <button
@@ -395,12 +447,42 @@ export function Home() {
                             </button>
                           </div>
                         )}
-                        {(mode === "translate" ||
-                          (mode === "explain" && explainLangKind === "human")) && (
+                        {mode === "translate" && (
+                          <>
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-muted-foreground">from</span>
+                              <select
+                                value={fromLang}
+                                onChange={(e) => setFromLang(e.target.value)}
+                                className="h-7 rounded-md border bg-background text-xs px-2"
+                              >
+                                <option value="Auto-detect">Auto-detect</option>
+                                {HUMAN_LANGUAGES.map((l) => (
+                                  <option key={l} value={l}>
+                                    {l}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-muted-foreground">to</span>
+                              <select
+                                value={humanLang}
+                                onChange={(e) => setHumanLang(e.target.value)}
+                                className="h-7 rounded-md border bg-background text-xs px-2"
+                              >
+                                {HUMAN_LANGUAGES.map((l) => (
+                                  <option key={l} value={l}>
+                                    {l}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </>
+                        )}
+                        {mode === "explain" && explainLangKind === "human" && (
                           <div className="flex items-center gap-1">
-                            <span className="text-xs text-muted-foreground">
-                              {mode === "translate" ? "to" : "in"}
-                            </span>
+                            <span className="text-xs text-muted-foreground">in</span>
                             <select
                               value={humanLang}
                               onChange={(e) => setHumanLang(e.target.value)}
@@ -414,14 +496,40 @@ export function Home() {
                             </select>
                           </div>
                         )}
-                        {((mode !== "explain" && spec.showCodeLang) ||
+                        {((mode !== "explain" && mode !== "translate" && spec.showCodeLang) ||
                           (mode === "explain" && explainLangKind === "code")) && (
-                          <Input
-                            value={language}
-                            onChange={(e) => setLanguage(e.target.value)}
-                            placeholder="Language"
-                            className="h-7 w-32 text-xs"
-                          />
+                          <div className="flex items-center gap-1">
+                            {mode === "convert" && (
+                              <span className="text-xs text-muted-foreground">from</span>
+                            )}
+                            <select
+                              value={language}
+                              onChange={(e) => setLanguage(e.target.value)}
+                              className="h-7 rounded-md border bg-background text-xs px-2"
+                            >
+                              {CODE_LANGUAGES.map((l) => (
+                                <option key={l} value={l}>
+                                  {l}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+                        {mode === "convert" && (
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs text-muted-foreground">to</span>
+                            <select
+                              value={targetLang}
+                              onChange={(e) => setTargetLang(e.target.value)}
+                              className="h-7 rounded-md border bg-background text-xs px-2"
+                            >
+                              {CODE_LANGUAGES.map((l) => (
+                                <option key={l} value={l}>
+                                  {l}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -500,7 +608,7 @@ export function Home() {
                         onChange={(e) => setCode(e.target.value)}
                         placeholder={
                           mode === "translate"
-                            ? "Paste text or code to translate..."
+                            ? "Paste text to translate..."
                             : "Paste your code here..."
                         }
                         className="min-h-[120px] font-mono text-sm resize-none bg-muted/30 border-0 focus-visible:ring-0 p-3"
@@ -509,23 +617,25 @@ export function Home() {
                   </div>
                 )}
 
-                <div className="space-y-2">
-                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Instructions
-                  </Label>
-                  <Textarea
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    placeholder={spec.promptPlaceholder}
-                    className="min-h-[80px] text-base resize-none border-0 focus-visible:ring-0 p-0"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                        e.preventDefault();
-                        handleSubmit();
-                      }
-                    }}
-                  />
-                </div>
+                {spec.showInstructions && (
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Instructions
+                    </Label>
+                    <Textarea
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      placeholder={spec.promptPlaceholder}
+                      className="min-h-[80px] text-base resize-none border-0 focus-visible:ring-0 p-0"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                          e.preventDefault();
+                          handleSubmit();
+                        }
+                      }}
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="bg-muted/30 border-t p-3 flex items-center justify-between">

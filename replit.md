@@ -1,6 +1,6 @@
-# [Project name]
+# Vanntai Test
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+An AI coding assistant that fixes broken code, edits/refactors code to a request, and generates new code files from a description — results stream back as syntax-highlighted, copyable code blocks.
 
 ## Run & Operate
 
@@ -22,15 +22,23 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- API contract source of truth: `lib/api-spec/openapi.yaml` (run codegen after edits)
+- DB schema: `lib/db/src/schema/{conversations,messages}.ts`
+- Backend routes: `artifacts/api-server/src/routes/anthropic/index.ts`
+- AI prompts per mode: `artifacts/api-server/src/lib/codeAssistant.ts`
+- Preloaded examples: `artifacts/api-server/src/lib/examples.ts`
+- Frontend app: `artifacts/vanntai-test/src/` (`pages/Home.tsx`, `hooks/use-stream.ts`, `components/Markdown.tsx`)
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- AI is powered by Replit's Anthropic AI integration (model `claude-sonnet-4-6`); no user API key. Env: `AI_INTEGRATIONS_ANTHROPIC_BASE_URL`, `AI_INTEGRATIONS_ANTHROPIC_API_KEY` (do not modify).
+- The bundle contained no ML model, so the "trained model" is a mode-specific system prompt (fix/edit/generate) over Claude.
+- The send-message endpoint streams via SSE (`text/event-stream`) and has no generated hook — the client uses fetch + ReadableStream (`hooks/use-stream.ts`). SSE frames are `data: {"content"|"done"|"error": ...}`.
+- No auth: single-purpose tool, all conversations are global by design.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Three modes: Fix Code (paste buggy code + describe the bug → corrected code + explanation), Edit Code (paste code + describe change → edited code), Generate Files (describe → generated code files). Clickable preloaded examples per mode; past sessions saved in a sidebar; answers render as syntax-highlighted, copyable markdown.
 
 ## User preferences
 

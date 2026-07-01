@@ -1,0 +1,1 @@
+- [SSE streaming for AI responses](sse-streaming.md) — AI send-message endpoints stream text/event-stream with no Orval hook; consume with fetch+ReadableStream, handle content/done/error frames.

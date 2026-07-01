@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Vanntai Test"
+version = "1.0.0"
+id = "artifacts/vanntai-test"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18630
+
+[services.development]
+run = "pnpm --filter @workspace/vanntai-test run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/vanntai-test", "run", "build" ]
+publicDir = "artifacts/vanntai-test/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18630"
+BASE_PATH = "/"
